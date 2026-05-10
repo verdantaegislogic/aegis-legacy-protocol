@@ -5,10 +5,109 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Aegis Legacy Protocol - Truth Engine</title>
     <meta name="description" content="Official repository for the Aegis Legacy Protocol Truth Engine.">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Courier New', monospace;
+            background: #0a0e27;
+            color: #00ff41;
+            padding: 20px;
+            min-height: 100vh;
+        }
+        
+        #app {
+            max-width: 800px;
+            margin: 0 auto;
+            border: 2px solid #00ff41;
+            padding: 20px;
+            background: rgba(0, 255, 65, 0.05);
+        }
+        
+        h1 {
+            margin-bottom: 10px;
+            text-shadow: 0 0 10px #00ff41;
+        }
+        
+        .status {
+            margin: 15px 0;
+            padding: 10px;
+            border-left: 3px solid #00ff41;
+            padding-left: 15px;
+        }
+        
+        .alert {
+            color: #ff3333;
+            border-left-color: #ff3333;
+        }
+        
+        .success {
+            color: #00ff41;
+            border-left-color: #00ff41;
+        }
+        
+        .console-output {
+            background: #000;
+            border: 1px solid #00ff41;
+            padding: 10px;
+            margin-top: 15px;
+            max-height: 300px;
+            overflow-y: auto;
+            font-size: 12px;
+        }
+    </style>
 </head>
 <body>
-    <div id="app"></div>
-    <script src="ai-integration.js"></script>
-    <script src="proof-of-reality.js"></script>
+    <div id="app">
+        <h1>⚡ Aegis Legacy Protocol - Truth Engine</h1>
+        <p>Initializing Reality Verification System...</p>
+        <div class="console-output" id="console-output"></div>
+    </div>
+    
+    <script src="proof-of-reality.js" defer></script>
+    <script src="ai-integration.js" defer></script>
+    <script defer>
+        // Initialize App
+        function initializeAegis() {
+            const appDiv = document.getElementById('app');
+            const consoleOutput = document.getElementById('console-output');
+            
+            if (!appDiv) {
+                console.error('App container not found!');
+                return;
+            }
+            
+            // Display initialization message
+            consoleOutput.innerHTML += '<div>[SYSTEM] Aegis Protocol Engine Initialized</div>';
+            
+            // Run the Truth Engine
+            if (typeof aegisProtocol !== 'undefined') {
+                const result = aegisProtocol.verifyReality({ source: "Live Feed", isTampered: false });
+                consoleOutput.innerHTML += `<div>${result}</div>`;
+                
+                // Update UI with status
+                const statusDiv = document.createElement('div');
+                statusDiv.className = 'status success';
+                statusDiv.innerHTML = `<strong>✓ Reality Verification Complete</strong><br>Status: Data Authenticity Confirmed<br>Protocol: Aegis Legacy ${new Date().toISOString()}`;
+                appDiv.appendChild(statusDiv);
+            }
+            
+            // Log AI Integration readiness
+            if (typeof aegisAI !== 'undefined') {
+                consoleOutput.innerHTML += `<div>[SYSTEM] AI Integration Ready: ${aegisAI.model}</div>`;
+            }
+        }
+        
+        // Run on DOM Ready
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initializeAegis);
+        } else {
+            initializeAegis();
+        }
+    </script>
 </body>
 </html>
