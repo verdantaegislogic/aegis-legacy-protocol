@@ -4,7 +4,7 @@
 
 const AegisSpamShield = require('./spamShield.js');
 const aiIntegration = require('./ai-integration.js');
-// const proofOfReality = require('./proof-of-reality.js');
+const proofOfReality = require('./proof-of-reality.js');
 // const streamInterceptor = require('./stream-interceptor.js');
 
 // Initialize the core services
@@ -35,7 +35,6 @@ module.exports = async (req, res) => {
         return res.writeHead(400).end(JSON.stringify({ error: "Missing incomingNumber parameter." }));
       }
 
-      // Run it through our low-cost local Bloom filter
       const isSpamDetected = spamShield.isSpam(incomingNumber);
 
       return res.writeHead(200).end(JSON.stringify({
@@ -54,12 +53,24 @@ module.exports = async (req, res) => {
         return res.writeHead(400).end(JSON.stringify({ error: "Missing dataStream payload." }));
       }
 
-      // Route parameters to your live orchestrator
-      return res.writeHead(200).end(JSON.stringify({
-        status: "SUCCESS",
-        message: "Data stream routed to Aegis AI layer successfully.",
-        timestamp: Date.now()
-      }));
+      // Process the stream via our secure automation/analysis model
+      const aiResponse = await aiIntegration.processStream(dataStream);
+
+      return res.writeHead(200).end(JSON.stringify(aiResponse));
+    }
+
+    // ─── ROUTE: PROOF OF REALITY VALIDATION ───
+    if (url === '/api/verify-reality' && method === 'POST') {
+      const { metadata } = payload;
+
+      if (!metadata) {
+        return res.writeHead(400).end(JSON.stringify({ error: "Missing metadata block for validation." }));
+      }
+
+      // Run stream signatures through the verification matrix
+      const realityCheck = proofOfReality.verifyRealitySignature(metadata);
+
+      return res.writeHead(200).end(JSON.stringify(realityCheck));
     }
 
     // ─── ROUTE: HEALTH CHECK / PROTOCOL STATUS ───
@@ -67,7 +78,7 @@ module.exports = async (req, res) => {
       return res.writeHead(200).end(JSON.stringify({
         protocol: "Aegis Legacy Protocol",
         status: "OPERATIONAL",
-        engines: ["SpamShield", "ProofOfReality", "AI-Integration", "StreamInterceptor"]
+        engines: ["SpamShield", "ProofOfReality", "AI-Integration"]
       }));
     }
 
