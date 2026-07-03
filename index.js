@@ -11,6 +11,10 @@ const AegisSpamShield = require('./spamShield.js');
 // Initialize the core services
 const spamShield = new AegisSpamShield();
 
+// Seed known spam signatures for active testing
+spamShield.addSpamNumber("+12093324588");
+
+
 // Main request handler (compatible with serverless Vercel routing)
 module.exports = async (req, res) => {
   // Set up standard JSON headers
