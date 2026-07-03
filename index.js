@@ -4,7 +4,8 @@
 
 const AegisSpamShield = require('./spamShield.js');
 // If you export your other modules, uncomment these as we wire them in:
-// const aiIntegration = require('./ai-integration.js');
+const aiIntegration = require('./ai-integration.js');
+
 // const proofOfReality = require('./proof-of-reality.js');
 // const streamInterceptor = require('./stream-interceptor.js');
 
