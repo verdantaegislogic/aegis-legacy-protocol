@@ -6,6 +6,10 @@ class AegisAIOrchestrator {
   constructor() {
     this.engineName = "Aegis Core AI";
     this.confidenceThreshold = 0.85;
+    
+    // --- MASTER AUTHENTICATION KEY ---
+    // Change "REPLACE_WITH_YOUR_SECURE_PASSPHRASE" to a private password only you know.
+    this._masterSecureToken = process.env.AEGIS_AUTH_TOKEN || "REPLACE_WITH_YOUR_SECURE_PASSPHRASE";
   }
 
   /**
@@ -17,8 +21,18 @@ class AegisAIOrchestrator {
     
     const payload = typeof dataStream === 'string' ? { text: dataStream } : dataStream;
     
-    // Check if this request is specifically asking the AI to perform a task or generate code
+    // Check if this request is trying to invoke code generation mechanics
     if (payload.actionType === "AUTOMATION_TASK") {
+      
+      // enforce ironclad identity validation
+      if (!payload.authToken || payload.authToken !== this._masterSecureToken) {
+        console.warn(`[SECURITY ALERT] Unauthorized attempts to access Aegis automation core dropped.`);
+        return {
+          status: "REJECTED",
+          error: "Access Denied: Invalid Security Handshake Token."
+        };
+      }
+
       return this._executeAutomationTask(payload.instruction);
     }
     
@@ -34,10 +48,10 @@ class AegisAIOrchestrator {
   }
 
   /**
-   * Autonomous Task Engine: Translates instructions into clean code payloads
+   * Autonomous Task Engine: Only reaches here ifauthToken matches perfectly
    */
   _executeAutomationTask(instruction) {
-    console.log(`[${this.engineName}] Running internal code modification script...`);
+    console.log(`[${this.engineName}] Running verified code modification script...`);
     
     let generatedPatch = "";
     let TargetModule = "unknown";
