@@ -3,475 +3,176 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Aegis Legacy Protocol - Truth Engine</title>
-    <meta name="description" content="Official repository for the Aegis Legacy Protocol Truth Engine.">
+    <title>Aegis Legacy Protocol - Global Visualization</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        
-        body {
-            font-family: 'Courier New', monospace;
-            background: #0a0e27;
-            color: #00ff41;
-            min-height: 100vh;
-            overflow: hidden;
-        }
-        
-        #map {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: 1;
-        }
-        
-        #app {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: 10;
-            pointer-events: none;
-            display: flex;
-            flex-direction: column;
-        }
-        
-        h1 {
-            margin: 20px auto 0;
-            text-shadow: 0 0 10px #00ff41;
-            text-align: center;
-            font-size: 18px;
-            pointer-events: auto;
-        }
-        
-        .container {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 20px;
-            padding: 20px;
-            margin-top: 0;
-            flex: 1;
-            pointer-events: none;
-        }
-        
-        .panel {
-            border: 2px solid #00ff41;
-            padding: 20px;
-            background: rgba(0, 0, 0, 0.85);
-            max-height: 500px;
-            pointer-events: auto;
-            overflow-y: auto;
-        }
-        
-        .panel h2 {
-            font-size: 14px;
-            margin-bottom: 15px;
-            text-shadow: 0 0 5px #00ff41;
-        }
-        
-        #status-content {
-            margin-bottom: 15px;
-        }
-        
-        .status {
-            margin: 15px 0;
-            padding: 10px;
-            border-left: 3px solid #00ff41;
-            padding-left: 15px;
-            font-size: 12px;
-            line-height: 1.5;
-        }
-        
-        .alert {
-            color: #ff3333;
-            border-left-color: #ff3333;
-        }
-        
-        .success {
-            color: #00ff41;
-            border-left-color: #00ff41;
-        }
-        
-        .console-output {
-            background: #000;
-            border: 1px solid #00ff41;
-            padding: 10px;
-            margin-top: 15px;
-            max-height: 250px;
-            overflow-y: auto;
-            font-size: 11px;
-            line-height: 1.4;
-        }
-        
-        .console-output div {
-            margin: 2px 0;
-        }
-        
-        .log-info {
-            color: #00ff41;
-        }
-        
-        .log-error {
-            color: #ff3333;
-        }
-        
-        .log-warn {
-            color: #ffaa00;
-        }
-        
-        .controls-panel {
-            border: 2px solid #00ff41;
-            padding: 20px;
-            background: rgba(0, 0, 0, 0.85);
-            max-height: 500px;
-            pointer-events: auto;
-            overflow-y: auto;
-        }
-        
-        .controls-panel h2 {
-            font-size: 14px;
-            margin-bottom: 15px;
-            text-shadow: 0 0 5px #00ff41;
-        }
-        
-        .control-group {
-            margin-bottom: 15px;
-        }
-        
-        .control-group label {
-            display: block;
-            font-size: 12px;
-            margin-bottom: 5px;
-            text-transform: uppercase;
-        }
-        
-        button {
-            width: 100%;
-            padding: 8px;
-            margin: 5px 0;
-            background: rgba(0, 255, 65, 0.2);
-            border: 1px solid #00ff41;
-            color: #00ff41;
-            cursor: pointer;
-            font-family: 'Courier New', monospace;
-            font-size: 11px;
-            transition: all 0.3s;
-        }
-        
-        button:hover {
-            background: rgba(0, 255, 65, 0.4);
-            text-shadow: 0 0 5px #00ff41;
-        }
-        
-        @media (max-width: 1024px) {
-            .container {
-                grid-template-columns: 1fr;
-                gap: 10px;
-                padding: 10px;
-            }
-            
-            .panel, .controls-panel {
-                max-height: 300px;
-            }
-        }
+        body { margin: 0; overflow: hidden; background-color: #030712; font-family: monospace; }
+        #canvas-container { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; }
+        .ui-layer { position: relative; z-index: 10; pointer-events: none; }
+        .interactive { pointer-events: auto; }
     </style>
 </head>
-<body>
-    <!-- Google Maps Container (Full Screen) -->
-    <div id="map"></div>
-    
-    <!-- Aegis UI Overlay -->
-    <div id="app">
-        <h1>⚡ Aegis Legacy Protocol - Truth Engine</h1>
-        
-        <div class="container">
-            <!-- Status Panel -->
-            <div class="panel">
-                <h2>System Status</h2>
-                <div id="status-content">
-                    <div class="status">
-                        <strong>🔄 Initializing Reality Verification System...</strong>
-                    </div>
-                </div>
-                <div class="console-output" id="console-output"></div>
-            </div>
-            
-            <!-- Controls Panel -->
-            <div class="controls-panel">
-                <h2>Map Controls</h2>
-                <div class="control-group">
-                    <label>View Mode:</label>
-                    <button id="btn-satellite">Satellite View</button>
-                    <button id="btn-roadmap">Roadmap View</button>
-                    <button id="btn-terrain">Terrain View</button>
-                </div>
-                <div class="control-group">
-                    <label>Street View:</label>
-                    <button id="btn-streetview">Activate Street View</button>
-                </div>
-                <div class="control-group">
-                    <label>Zoom Control:</label>
-                    <button id="btn-zoom-in">Zoom In</button>
-                    <button id="btn-zoom-out">Zoom Out</button>
-                </div>
-                <div class="control-group">
-                    <label>Location:</label>
-                    <button id="btn-center-mother-lode">Center on Mother Lode</button>
-                </div>
-            </div>
-        </div>
-    </div>
-    
-    <!-- Google Maps API Script -->
-    <script async defer src="https://maps.googleapis.com/maps/api/js?key=__NEXT_PUBLIC_GOOGLE_MAPS_API_KEY__&callback=initMap"></script>
-    
-    <!-- Aegis Protocol Scripts -->
-    <script src="proof-of-reality.js" defer></script>
-    <script src="ai-integration.js" defer></script>
-    
-    <!-- Google Maps Initialization & Aegis Integration -->
-    <script defer>
-        // Logger utility
-        const AegisLogger = {
-            logs: [],
-            
-            log: function(message, type = 'info') {
-                const timestamp = new Date().toLocaleTimeString();
-                const logEntry = `[${timestamp}] ${message}`;
-                this.logs.push({ message: logEntry, type });
-                this.render();
-                console.log(logEntry);
-            },
-            
-            render: function() {
-                const output = document.getElementById('console-output');
-                if (output) {
-                    output.innerHTML = this.logs
-                        .map(log => `<div class="log-${log.type}">${log.message}</div>`)
-                        .join('');
-                    output.scrollTop = output.scrollHeight;
-                }
-            }
-        };
-        
-        // Google Maps Instance
-        const AegisMap = {
-            map: null,
-            streetViewPanorama: null,
-            initialized: false,
-            
-            // Mother Lode coordinates (Jamestown/Sonora area)
-            motherLodeLocation: { lat: 37.8616, lng: -120.4486 },
-            currentZoom: 14,
-            
-            init: function() {
-                try {
-                    AegisLogger.log('Initializing Google Maps Engine...', 'info');
-                    
-                    // Create map instance
-                    this.map = new google.maps.Map(document.getElementById('map'), {
-                        zoom: this.currentZoom,
-                        center: this.motherLodeLocation,
-                        mapTypeId: google.maps.MapTypeId.SATELLITE,
-                        fullscreenControl: true,
-                        fullscreenControlOptions: {
-                            position: google.maps.ControlPosition.TOP_RIGHT
-                        },
-                        zoomControl: true,
-                        mapTypeControl: true,
-                        streetViewControl: true,
-                        rotateControl: true,
-                        scaleControl: true
-                    });
-                    
-                    AegisLogger.log('Google Maps Initialized - Satellite View Active', 'info');
-                    AegisLogger.log(`📍 Location: Mother Lode Region (${this.motherLodeLocation.lat}, ${this.motherLodeLocation.lng})`, 'info');
-                    
-                    // Bind control buttons
-                    this.bindControls();
-                    
-                    this.initialized = true;
-                    AegisLogger.log('Map Engine Ready', 'success');
-                    
-                } catch (error) {
-                    AegisLogger.log(`Map Initialization Error: ${error.message}`, 'error');
-                }
-            },
-            
-            bindControls: function() {
-                // View mode buttons
-                document.getElementById('btn-satellite').addEventListener('click', () => {
-                    this.map.setMapTypeId(google.maps.MapTypeId.SATELLITE);
-                    AegisLogger.log('View Mode: SATELLITE', 'info');
-                });
-                
-                document.getElementById('btn-roadmap').addEventListener('click', () => {
-                    this.map.setMapTypeId(google.maps.MapTypeId.ROADMAP);
-                    AegisLogger.log('View Mode: ROADMAP', 'info');
-                });
-                
-                document.getElementById('btn-terrain').addEventListener('click', () => {
-                    this.map.setMapTypeId(google.maps.MapTypeId.TERRAIN);
-                    AegisLogger.log('View Mode: TERRAIN', 'info');
-                });
-                
-                // Zoom controls
-                document.getElementById('btn-zoom-in').addEventListener('click', () => {
-                    this.currentZoom++;
-                    this.map.setZoom(this.currentZoom);
-                    AegisLogger.log(`Zoom Level: ${this.currentZoom}`, 'info');
-                });
-                
-                document.getElementById('btn-zoom-out').addEventListener('click', () => {
-                    this.currentZoom--;
-                    this.map.setZoom(this.currentZoom);
-                    AegisLogger.log(`Zoom Level: ${this.currentZoom}`, 'info');
-                });
-                
-                // Center on Mother Lode
-                document.getElementById('btn-center-mother-lode').addEventListener('click', () => {
-                    this.map.panTo(this.motherLodeLocation);
-                    this.map.setZoom(14);
-                    this.currentZoom = 14;
-                    AegisLogger.log('Centered on Mother Lode Region', 'info');
-                });
-                
-                // Street View
-                document.getElementById('btn-streetview').addEventListener('click', () => {
-                    this.activateStreetView();
-                });
-            },
-            
-            activateStreetView: function() {
-                AegisLogger.log('Activating Street View...', 'info');
-                
-                const container = document.createElement('div');
-                container.style.cssText = `
-                    position: fixed;
-                    top: 0;
-                    left: 0;
-                    width: 100%;
-                    height: 100%;
-                    z-index: 100;
-                    background: #000;
-                `;
-                
-                const closeBtn = document.createElement('button');
-                closeBtn.textContent = '✕ Close Street View';
-                closeBtn.style.cssText = `
-                    position: absolute;
-                    top: 20px;
-                    right: 20px;
-                    z-index: 101;
-                    padding: 10px 20px;
-                    background: rgba(0, 255, 65, 0.2);
-                    border: 2px solid #00ff41;
-                    color: #00ff41;
-                    cursor: pointer;
-                    font-family: 'Courier New', monospace;
-                    font-size: 12px;
-                `;
-                
-                container.appendChild(closeBtn);
-                document.body.appendChild(container);
-                
-                this.streetViewPanorama = new google.maps.StreetViewPanorama(
-                    container,
-                    {
-                        position: this.motherLodeLocation,
-                        pov: { heading: 0, pitch: 0 },
-                        zoom: 1
-                    }
-                );
-                
-                AegisLogger.log('Street View Active - Mother Lode Region', 'success');
-                
-                closeBtn.addEventListener('click', () => {
-                    container.remove();
-                    this.streetViewPanorama = null;
-                    AegisLogger.log('Street View Closed', 'info');
-                });
-            }
-        };
-        
-        // Global initMap function (required by Google Maps callback)
-        window.initMap = function() {
-            AegisMap.init();
-        };
-        
-        // Main Initialization Function
-        function initializeAegis() {
-            try {
-                AegisLogger.log('=== Aegis Legacy Protocol Startup ===', 'info');
-                AegisLogger.log('System Initializing...', 'info');
-                
-                // Initialize Map
-                if (typeof google !== 'undefined' && google.maps) {
-                    AegisMap.init();
-                } else {
-                    AegisLogger.log('Waiting for Google Maps API...', 'warn');
-                    setTimeout(initializeAegis, 500);
-                    return;
-                }
-                
-                // Run Truth Engine
-                setTimeout(() => {
-                    if (typeof aegisProtocol !== 'undefined') {
-                        AegisLogger.log('Truth Engine Online', 'info');
-                        const result = aegisProtocol.verifyReality({ source: "Live Feed", isTampered: false });
-                        AegisLogger.log(result, 'info');
-                        
-                        // Update Status Panel
-                        const statusContent = document.getElementById('status-content');
-                        if (statusContent) {
-                            statusContent.innerHTML = `
-                                <div class="status success">
-                                    <strong>✓ Reality Verification Complete</strong><br>
-                                    Status: Data Authenticity Confirmed<br>
-                                    Protocol: Aegis Legacy ${new Date().toLocaleTimeString()}
-                                </div>
-                            `;
-                        }
-                    }
-                }, 500);
-                
-                // Log AI Integration
-                setTimeout(() => {
-                    if (typeof aegisAI !== 'undefined') {
-                        AegisLogger.log(`AI Integration Ready: ${aegisAI.model}`, 'info');
-                    }
-                }, 700);
-                
-                // Log Agents
-                setTimeout(() => {
-                    AegisLogger.log('Agent Status:', 'info');
-                    if (typeof aegisProtocol !== 'undefined') {
-                        AegisLogger.log(`  • Vigil: ${aegisProtocol.agents.vigil}`, 'warn');
-                        AegisLogger.log(`  • Validator: ${aegisProtocol.agents.validator}`, 'warn');
-                        AegisLogger.log(`  • Executive: ${aegisProtocol.agents.executive}`, 'warn');
-                    }
-                }, 900);
-                
-                AegisLogger.log('=== Startup Complete ===', 'info');
-                
-            } catch (error) {
-                AegisLogger.log(`Initialization Error: ${error.message}`, 'error');
-            }
-        }
-        
-        // Wait for DOM to be ready
-        if (document.readyState === 'loading') {
-            document.addEventListener('DOMContentLoaded', initializeAegis);
-        } else {
-            initializeAegis();
-        }
-    </script>
-<script src="stream-interceptor.js"></script>
+<body class="text-slate-200">
 
+    <div id="canvas-container"></div>
+
+    <div class="ui-layer flex flex-col justify-between h-screen p-6">
+        <header class="flex justify-between items-start">
+            <div class="bg-slate-900/80 backdrop-blur border border-emerald-500/30 p-4 rounded shadow-2xl">
+                <h1 class="text-emerald-400 font-bold tracking-widest text-lg">AEGIS LEGACY PROTOCOL</h1>
+                <p class="text-xs text-slate-400 mt-1">Status: <span class="text-emerald-400 animate-pulse">● OPERATIONAL</span></p>
+            </div>
+            <div class="bg-slate-900/80 backdrop-blur border border-slate-700 p-3 rounded text-right text-xs">
+                <p id="clock">SYSTEM TIME: LOADING...</p>
+                <p class="text-slate-500 mt-1">NODE: SECURE ROOT</p>
+            </div>
+        </header>
+
+        <main class="flex justify-between items-end mt-auto">
+            <div class="bg-slate-900/80 backdrop-blur border border-slate-700/50 p-4 rounded w-80 text-xs space-y-2">
+                <div class="text-emerald-400 font-bold border-b border-slate-700 pb-1 mb-2">TELEMETRY STREAMS</div>
+                <div class="flex justify-between"><span>Spam Shield Core:</span><span class="text-emerald-400">ONLINE</span></div>
+                <div class="flex justify-between"><span>Proof of Reality:</span><span class="text-cyan-400">STANDBY</span></div>
+                <div class="flex justify-between"><span>AI Integration:</span><span class="text-emerald-400">CONNECTED</span></div>
+                <div class="flex justify-between"><span>Local Database Size:</span><span class="text-slate-400">10,007 BITS</span></div>
+            </div>
+
+            <div class="interactive bg-slate-900/90 border border-emerald-500/20 px-4 py-2 rounded text-xs text-center text-slate-400 max-w-sm">
+                Drag on screen to rotate the network globe visualization.
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // System Clock Functionality
+        function updateClock() {
+            const now = new Date();
+            document.getElementById('clock').innerText = `SYSTEM TIME: ${now.toISOString().replace('T', ' ').substring(0, 19)} UTC`;
+        }
+        setInterval(updateClock, 1000);
+        updateClock();
+
+        // --- THREE.JS 3D INTERACTIVE GLOBE GENERATOR ---
+        const container = document.getElementById('canvas-container');
+        const scene = new THREE.Scene();
+        scene.background = new THREE.Color(0x030712);
+
+        const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
+        camera.position.z = 2.5;
+
+        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setPixelRatio(window.devicePixelRatio);
+        container.appendChild(renderer.domElement);
+
+        // Create Earth Sphere Geometry
+        const geometry = new THREE.SphereGeometry(0.6, 64, 64);
+        
+        // Wireframe layout to visualize data meshes instead of flat texture maps
+        const material = new THREE.MeshBasicMaterial({
+            color: 0x10b981,
+            wireframe: true,
+            transparent: true,
+            opacity: 0.15
+        });
+        const earthMesh = new THREE.Mesh(geometry, material);
+        scene.add(earthMesh);
+
+        // Add secondary internal particle aura data node layout
+        const dotGeometry = new THREE.SphereGeometry(0.595, 32, 32);
+        const dotMaterial = new THREE.PointsMaterial({
+            color: 0x34d399,
+            size: 0.006,
+            transparent: true,
+            opacity: 0.8
+        });
+        const dotMesh = new THREE.Points(dotGeometry, dotMaterial);
+        scene.add(dotMesh);
+
+        // Add glowing target tracking coordinates
+        const markerGeometry = new THREE.BufferGeometry();
+        const markerCount = 15;
+        const positions = new Float32Array(markerCount * 3);
+        
+        for(let i=0; i<markerCount*3; i+=3) {
+            const u = Math.random();
+            const v = Math.random();
+            const theta = u * 2.0 * Math.PI;
+            const phi = Math.acos(2.0 * v - 1.0);
+            const r = 0.605;
+            
+            positions[i] = r * Math.sin(phi) * Math.cos(theta);
+            positions[i+1] = r * Math.sin(phi) * Math.sin(theta);
+            positions[i+2] = r * Math.cos(phi);
+        }
+        
+        markerGeometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+        const markerMaterial = new THREE.PointsMaterial({
+            color: 0x22d3ee,
+            size: 0.025,
+            transparent: true,
+            opacity: 0.9
+        });
+        const markers = new THREE.Points(markerGeometry, markerMaterial);
+        scene.add(markers);
+
+        // Handle Interactive Mouse/Touch Drag Control Mechanics
+        let isDragging = false;
+        let previousMousePosition = { x: 0, y: 0 };
+
+        window.addEventListener('mousedown', (e) => { isDragging = true; });
+        window.addEventListener('touchstart', (e) => { isDragging = true; previousMousePosition = { x: e.touches[0].clientX, y: e.touches[0].clientY }; });
+
+        window.addEventListener('mousemove', (e) => {
+            const deltaMove = { x: e.clientX - previousMousePosition.x, y: e.clientY - previousMousePosition.y };
+            if (isDragging) {
+                earthMesh.rotation.y += deltaMove.x * 0.005;
+                earthMesh.rotation.x += deltaMove.y * 0.005;
+                dotMesh.rotation.y += deltaMove.x * 0.005;
+                dotMesh.rotation.x += deltaMove.y * 0.005;
+                markers.rotation.y += deltaMove.x * 0.005;
+                markers.rotation.x += deltaMove.y * 0.005;
+            }
+            previousMousePosition = { x: e.clientX, y: e.clientY };
+        });
+
+        window.addEventListener('touchmove', (e) => {
+            const deltaMove = { x: e.touches[0].clientX - previousMousePosition.x, y: e.touches[0].clientY - previousMousePosition.y };
+            if (isDragging) {
+                earthMesh.rotation.y += deltaMove.x * 0.008;
+                earthMesh.rotation.x += deltaMove.y * 0.008;
+                dotMesh.rotation.y += deltaMove.x * 0.008;
+                dotMesh.rotation.x += deltaMove.y * 0.008;
+                markers.rotation.y += deltaMove.x * 0.008;
+                markers.rotation.x += deltaMove.y * 0.008;
+            }
+            previousMousePosition = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+        });
+
+        window.addEventListener('mouseup', () => { isDragging = false; });
+        window.addEventListener('touchend', () => { isDragging = false; });
+
+        // Handle resizing layout changes
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+
+        // Animation Loop
+        function animate() {
+            requestAnimationFrame(animate);
+
+            if(!isDragging) {
+                earthMesh.rotation.y += 0.001;
+                dotMesh.rotation.y += 0.0012;
+                markers.rotation.y += 0.001;
+            }
+
+            renderer.render(scene, camera);
+        }
+        animate();
+    </script>
 </body>
 </html>
