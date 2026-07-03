@@ -3,21 +3,22 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Aegis Legacy Protocol - Global Navigation Console</title>
+    <title>Aegis Legacy Protocol</title>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
-    <script src="https://cesium.com/downloads/cesiumjs/releases/1.105/Build/Cesium/Cesium.js"></script>
-    <link href="https://cesium.com/downloads/cesiumjs/releases/1.105/Build/Cesium/Widgets/widgets.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
     <style>
         body { margin: 0; overflow: hidden; background-color: #030712; font-family: monospace; }
-        #cesiumContainer { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; }
+        #map { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; background: #030712; }
         .ui-layer { position: relative; z-index: 10; pointer-events: none; }
         .interactive { pointer-events: auto; }
-        .cesium-viewer-bottom { display: none !important; }
+        /* Style map tiles dark if satellite isn't fully loaded */
+        .leaflet-container { background: #030712 !important; }
     </style>
 </head>
 <body class="text-slate-200">
 
-    <div id="cesiumContainer"></div>
+    <div id="map"></div>
 
     <div class="ui-layer flex flex-col justify-between h-screen p-4 sm:p-6">
         
@@ -36,7 +37,7 @@
             
             <div class="interactive bg-slate-900/90 backdrop-blur border border-slate-700/50 p-4 rounded w-full md:w-80 text-xs space-y-2 order-2 md:order-1">
                 <div class="text-emerald-400 font-bold border-b border-slate-700 pb-1 mb-2">TELEMETRY STREAMS</div>
-                <div class="flex justify-between"><span>Core Interface:</span><span class="text-emerald-400">GEOGRAPHIC LTR</span></div>
+                <div class="flex justify-between"><span>Core Interface:</span><span class="text-emerald-400">STABLE GEOGRAPHIC</span></div>
                 <div class="flex justify-between"><span>AI Assistant Core:</span><span class="text-emerald-400">ACTIVE HANDSHAKE</span></div>
                 <div class="flex justify-between"><span>Security Guardrail:</span><span class="text-cyan-400">TOKEN ENFORCED</span></div>
                 <div class="text-[10px] text-slate-500 pt-2 border-t border-slate-800">Use the terminal to fly to locations or change configurations automatically.</div>
@@ -45,15 +46,15 @@
             <div class="interactive bg-slate-900/95 backdrop-blur border-2 border-emerald-500/40 rounded shadow-2xl p-4 w-full md:w-128 max-w-xl order-1 md:order-2 flex flex-col h-64">
                 <div class="text-xs font-bold text-emerald-400 border-b border-slate-800 pb-1 flex justify-between">
                     <span>🤖 AEGIS INTERACTIVE AI NAVIGATOR</span>
-                    <span class="text-slate-500 text-[10px]">VER. 1.0.4</span>
+                    <span class="text-slate-500 text-[10px]">VER. 1.0.5</span>
                 </div>
                 
                 <div id="chat-feed" class="flex-1 overflow-y-auto my-2 space-y-2 p-1 text-xs">
-                    <div class="text-emerald-400/80"><b>[Aegis System]:</b> Welcome to the Aegis Protocol Interface. Tell me where you would like to look or fly to, and I will handle the coordinates for you!</div>
+                    <div class="text-emerald-400/80"><b>[Aegis System]:</b> Core interface ready. Command me to fly to specific nodes or toggle map modes, and I will execute the adjustments instantly.</div>
                 </div>
 
                 <form id="terminal-form" class="flex gap-2 border-t border-slate-800 pt-2">
-                    <input id="user-input" type="text" placeholder="Type command (e.g., 'Fly to Grand Canyon' or 'Show space view')..." class="flex-1 bg-slate-950 border border-slate-700 rounded px-3 py-1.5 text-xs text-emerald-300 focus:outline-none focus:border-emerald-500" autocomplete="off">
+                    <input id="user-input" type="text" placeholder="Type command (e.g., 'Fly to Winslow' or 'Switch to satellite')..." class="flex-1 bg-slate-950 border border-slate-700 rounded px-3 py-1.5 text-xs text-emerald-300 focus:outline-none focus:border-emerald-500" autocomplete="off">
                     <button type="submit" class="bg-emerald-600 hover:bg-emerald-500 text-slate-950 font-bold px-4 py-1.5 rounded text-xs transition duration-150">SEND</button>
                 </form>
             </div>
@@ -70,24 +71,22 @@
         setInterval(updateClock, 1000);
         updateClock();
 
-        // 1. Initialize Cesium Globe Earth Map (No Keys Required)
-        const viewer = new Cesium.Viewer('cesiumContainer', {
-            imageryProvider: new Cesium.OpenStreetMapImageryProvider({
-                url : 'https://a.tile.openstreetmap.org/'
-            }),
-            baseLayerPicker: false,
-            geocoder: false,
-            homeButton: false,
-            infoBox: false,
-            sceneModePicker: false,
-            selectionIndicator: false,
-            timeline: false,
-            navigationHelpButton: false,
-            navigationInstructionsInitiallyVisible: false,
-            animation: false,
-            skyAtmosphere: true
+        // 1. Map Style Layers Configurations
+        const satelliteLayer = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+            attribution: 'Tiles &copy; Esri'
         });
-        viewer.scene.globe.enableLighting = true;
+
+        const terrainLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; OpenStreetMap contributors'
+        });
+
+        // Initialize Map centered globally at space altitude zoom
+        const map = L.map('map', {
+            center: [37.0902, -95.7129],
+            zoom: 3,
+            layers: [satelliteLayer], // Default to satellite view so landmasses are crisp
+            zoomControl: false
+        });
 
         // 2. Chat Terminal Logic Engine Handler
         const chatFeed = document.getElementById('chat-feed');
@@ -107,13 +106,12 @@
             const text = userInput.value.trim();
             if (!text) return;
 
-            // Print user query instantly to feed
             printMessage("User", text, "text-cyan-400");
             userInput.value = '';
 
             const lowerText = text.toLowerCase();
 
-            // Check if user is attempting an administrative code change without authorization token
+            // Guardrail checks
             if (lowerText.includes("code") || lowerText.includes("add line") || lowerText.includes("modify file") || lowerText.includes("spamshield")) {
                 setTimeout(() => {
                     printMessage("Aegis Guardrail", "⛔ SECURITY VIOLATION: Core configuration changes require an administrative 'authToken' verification signature. Action rejected.", "text-rose-400 font-bold");
@@ -123,36 +121,32 @@
 
             // --- INTENT ROUTING MECHANICS FOR GLOBAL NAVIGATION ---
             setTimeout(() => {
-                if (lowerText.includes("canyon")) {
-                    printMessage("Aegis Navigator", "Adjusting trajectory vectors... Flying to Grand Canyon, Arizona.", "text-emerald-400");
-                    viewer.camera.flyTo({
-                        destination: Cesium.Cartesian3.fromDegrees(-112.1129, 36.1069, 25000.0),
-                        orientation: { heading: Cesium.Math.toRadians(0.0), pitch: Cesium.Math.toRadians(-45.0) }
-                    });
-                } 
-                else if (lowerText.includes("space") || lowerText.includes("zoom out") || lowerText.includes("global view")) {
-                    printMessage("Aegis Navigator", "Scaling out camera lens to orbit trajectory altitude.", "text-emerald-400");
-                    viewer.camera.flyTo({
-                        destination: Cesium.Cartesian3.fromDegrees(-95.7129, 37.0902, 12000000.0)
-                    });
+                if (lowerText.includes("satellite")) {
+                    printMessage("Aegis Navigator", "Swapping map layout to High-Resolution Satellite imagery.", "text-emerald-400");
+                    map.removeLayer(terrainLayer);
+                    map.addLayer(satelliteLayer);
+                }
+                else if (lowerText.includes("terrain") || lowerText.includes("street")) {
+                    printMessage("Aegis Navigator", "Swapping map layout to Standard Street/Terrain mapping.", "text-emerald-400");
+                    map.removeLayer(satelliteLayer);
+                    map.addLayer(terrainLayer);
                 }
                 else if (lowerText.includes("winslow") || lowerText.includes("arizona")) {
-                    printMessage("Aegis Navigator", "Setting destination parameters to Winslow, Arizona. Dropping anchor.", "text-emerald-400");
-                    viewer.camera.flyTo({
-                        destination: Cesium.Cartesian3.fromDegrees(-110.6972, 35.0242, 8000.0),
-                        orientation: { heading: Cesium.Math.toRadians(0.0), pitch: Cesium.Math.toRadians(-90.0) }
-                    });
+                    printMessage("Aegis Navigator", "Navigating framework to Winslow, Arizona node (Zoom level 14).", "text-emerald-400");
+                    map.flyTo([35.0242, -110.6972], 14);
                 }
                 else if (lowerText.includes("sonora") || lowerText.includes("california")) {
-                    printMessage("Aegis Navigator", "Navigating coordinates to Sonora, California node.", "text-emerald-400");
-                    viewer.camera.flyTo({
-                        destination: Cesium.Cartesian3.fromDegrees(-120.3821, 37.9829, 6000.0)
-                    });
+                    printMessage("Aegis Navigator", "Navigating coordinates to Sonora, California node (Zoom level 14).", "text-emerald-400");
+                    map.flyTo([37.9829, -120.3821], 14);
+                }
+                else if (lowerText.includes("space") || lowerText.includes("zoom out") || lowerText.includes("global")) {
+                    printMessage("Aegis Navigator", "Resetting lens to global orbit overview trajectory.", "text-emerald-400");
+                    map.flyTo([37.0902, -95.7129], 3);
                 }
                 else {
-                    printMessage("Aegis Navigator", "Command acknowledged. Navigating layout preferences... (Try typing 'Fly to Winslow' or 'Show space view')", "text-slate-400");
+                    printMessage("Aegis Navigator", "Command processed. Try typing 'Fly to Winslow', 'Fly to Sonora', or 'Switch to street view'.", "text-slate-400");
                 }
-            }, 600);
+            }, 500);
         });
     </script>
 </body>
