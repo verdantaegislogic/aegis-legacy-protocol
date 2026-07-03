@@ -3,49 +3,66 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Aegis Legacy Protocol - Global Visualization</title>
+    <title>Aegis Legacy Protocol - Global Navigation Console</title>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cesium.com/downloads/cesiumjs/releases/1.105/Build/Cesium/Cesium.js"></script>
+    <link href="https://cesium.com/downloads/cesiumjs/releases/1.105/Build/Cesium/Widgets/widgets.css" rel="stylesheet">
     <style>
         body { margin: 0; overflow: hidden; background-color: #030712; font-family: monospace; }
-        #canvas-container { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; }
+        #cesiumContainer { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; }
         .ui-layer { position: relative; z-index: 10; pointer-events: none; }
         .interactive { pointer-events: auto; }
+        .cesium-viewer-bottom { display: none !important; }
     </style>
 </head>
 <body class="text-slate-200">
 
-    <div id="canvas-container"></div>
+    <div id="cesiumContainer"></div>
 
-    <div class="ui-layer flex flex-col justify-between h-screen p-6">
-        <header class="flex justify-between items-start">
-            <div class="bg-slate-900/80 backdrop-blur border border-emerald-500/30 p-4 rounded shadow-2xl">
-                <h1 class="text-emerald-400 font-bold tracking-widest text-lg">AEGIS LEGACY PROTOCOL</h1>
-                <p class="text-xs text-slate-400 mt-1">Status: <span class="text-emerald-400 animate-pulse">● OPERATIONAL</span></p>
+    <div class="ui-layer flex flex-col justify-between h-screen p-4 sm:p-6">
+        
+        <header class="flex justify-between items-start w-full">
+            <div class="bg-slate-900/90 backdrop-blur border border-emerald-500/30 p-4 rounded shadow-2xl">
+                <h1 class="text-emerald-400 font-bold tracking-widest text-base sm:text-lg">AEGIS LEGACY PROTOCOL</h1>
+                <p class="text-xs text-slate-400 mt-1">AI Voice Assistant: <span class="text-emerald-400 animate-pulse">● LISTENING</span></p>
             </div>
-            <div class="bg-slate-900/80 backdrop-blur border border-slate-700 p-3 rounded text-right text-xs">
+            <div class="bg-slate-900/90 backdrop-blur border border-slate-700 p-3 rounded text-right text-xs hidden sm:block">
                 <p id="clock">SYSTEM TIME: LOADING...</p>
-                <p class="text-slate-500 mt-1">NODE: SECURE ROOT</p>
+                <p class="text-slate-500 mt-1">NODE: SECURE NAVIGATION ROOT</p>
             </div>
         </header>
 
-        <main class="flex justify-between items-end mt-auto">
-            <div class="bg-slate-900/80 backdrop-blur border border-slate-700/50 p-4 rounded w-80 text-xs space-y-2">
+        <main class="flex flex-col md:flex-row justify-between items-end gap-4 mt-auto w-full">
+            
+            <div class="interactive bg-slate-900/90 backdrop-blur border border-slate-700/50 p-4 rounded w-full md:w-80 text-xs space-y-2 order-2 md:order-1">
                 <div class="text-emerald-400 font-bold border-b border-slate-700 pb-1 mb-2">TELEMETRY STREAMS</div>
-                <div class="flex justify-between"><span>Spam Shield Core:</span><span class="text-emerald-400">ONLINE</span></div>
-                <div class="flex justify-between"><span>Proof of Reality:</span><span class="text-cyan-400">STANDBY</span></div>
-                <div class="flex justify-between"><span>AI Integration:</span><span class="text-emerald-400">CONNECTED</span></div>
-                <div class="flex justify-between"><span>Local Database Size:</span><span class="text-slate-400">10,007 BITS</span></div>
+                <div class="flex justify-between"><span>Core Interface:</span><span class="text-emerald-400">GEOGRAPHIC LTR</span></div>
+                <div class="flex justify-between"><span>AI Assistant Core:</span><span class="text-emerald-400">ACTIVE HANDSHAKE</span></div>
+                <div class="flex justify-between"><span>Security Guardrail:</span><span class="text-cyan-400">TOKEN ENFORCED</span></div>
+                <div class="text-[10px] text-slate-500 pt-2 border-t border-slate-800">Use the terminal to fly to locations or change configurations automatically.</div>
             </div>
 
-            <div class="interactive bg-slate-900/90 border border-emerald-500/20 px-4 py-2 rounded text-xs text-center text-slate-400 max-w-sm">
-                Drag on screen to rotate the network globe visualization.
+            <div class="interactive bg-slate-900/95 backdrop-blur border-2 border-emerald-500/40 rounded shadow-2xl p-4 w-full md:w-128 max-w-xl order-1 md:order-2 flex flex-col h-64">
+                <div class="text-xs font-bold text-emerald-400 border-b border-slate-800 pb-1 flex justify-between">
+                    <span>🤖 AEGIS INTERACTIVE AI NAVIGATOR</span>
+                    <span class="text-slate-500 text-[10px]">VER. 1.0.4</span>
+                </div>
+                
+                <div id="chat-feed" class="flex-1 overflow-y-auto my-2 space-y-2 p-1 text-xs">
+                    <div class="text-emerald-400/80"><b>[Aegis System]:</b> Welcome to the Aegis Protocol Interface. Tell me where you would like to look or fly to, and I will handle the coordinates for you!</div>
+                </div>
+
+                <form id="terminal-form" class="flex gap-2 border-t border-slate-800 pt-2">
+                    <input id="user-input" type="text" placeholder="Type command (e.g., 'Fly to Grand Canyon' or 'Show space view')..." class="flex-1 bg-slate-950 border border-slate-700 rounded px-3 py-1.5 text-xs text-emerald-300 focus:outline-none focus:border-emerald-500" autocomplete="off">
+                    <button type="submit" class="bg-emerald-600 hover:bg-emerald-500 text-slate-950 font-bold px-4 py-1.5 rounded text-xs transition duration-150">SEND</button>
+                </form>
             </div>
+
         </main>
     </div>
 
     <script>
-        // System Clock Functionality
+        // System Clock
         function updateClock() {
             const now = new Date();
             document.getElementById('clock').innerText = `SYSTEM TIME: ${now.toISOString().replace('T', ' ').substring(0, 19)} UTC`;
@@ -53,126 +70,90 @@
         setInterval(updateClock, 1000);
         updateClock();
 
-        // --- THREE.JS 3D INTERACTIVE GLOBE GENERATOR ---
-        const container = document.getElementById('canvas-container');
-        const scene = new THREE.Scene();
-        scene.background = new THREE.Color(0x030712);
-
-        const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
-        camera.position.z = 2.5;
-
-        const renderer = new THREE.WebGLRenderer({ antialias: true });
-        renderer.setSize(window.innerWidth, window.innerHeight);
-        renderer.setPixelRatio(window.devicePixelRatio);
-        container.appendChild(renderer.domElement);
-
-        // Create Earth Sphere Geometry
-        const geometry = new THREE.SphereGeometry(0.6, 64, 64);
-        
-        // Wireframe layout to visualize data meshes instead of flat texture maps
-        const material = new THREE.MeshBasicMaterial({
-            color: 0x10b981,
-            wireframe: true,
-            transparent: true,
-            opacity: 0.15
+        // 1. Initialize Cesium Globe Earth Map (No Keys Required)
+        const viewer = new Cesium.Viewer('cesiumContainer', {
+            imageryProvider: new Cesium.OpenStreetMapImageryProvider({
+                url : 'https://a.tile.openstreetmap.org/'
+            }),
+            baseLayerPicker: false,
+            geocoder: false,
+            homeButton: false,
+            infoBox: false,
+            sceneModePicker: false,
+            selectionIndicator: false,
+            timeline: false,
+            navigationHelpButton: false,
+            navigationInstructionsInitiallyVisible: false,
+            animation: false,
+            skyAtmosphere: true
         });
-        const earthMesh = new THREE.Mesh(geometry, material);
-        scene.add(earthMesh);
+        viewer.scene.globe.enableLighting = true;
 
-        // Add secondary internal particle aura data node layout
-        const dotGeometry = new THREE.SphereGeometry(0.595, 32, 32);
-        const dotMaterial = new THREE.PointsMaterial({
-            color: 0x34d399,
-            size: 0.006,
-            transparent: true,
-            opacity: 0.8
-        });
-        const dotMesh = new THREE.Points(dotGeometry, dotMaterial);
-        scene.add(dotMesh);
+        // 2. Chat Terminal Logic Engine Handler
+        const chatFeed = document.getElementById('chat-feed');
+        const terminalForm = document.getElementById('terminal-form');
+        const userInput = document.getElementById('user-input');
 
-        // Add glowing target tracking coordinates
-        const markerGeometry = new THREE.BufferGeometry();
-        const markerCount = 15;
-        const positions = new Float32Array(markerCount * 3);
-        
-        for(let i=0; i<markerCount*3; i+=3) {
-            const u = Math.random();
-            const v = Math.random();
-            const theta = u * 2.0 * Math.PI;
-            const phi = Math.acos(2.0 * v - 1.0);
-            const r = 0.605;
-            
-            positions[i] = r * Math.sin(phi) * Math.cos(theta);
-            positions[i+1] = r * Math.sin(phi) * Math.sin(theta);
-            positions[i+2] = r * Math.cos(phi);
+        function printMessage(sender, text, colorClass = "text-slate-300") {
+            const msg = document.createElement('div');
+            msg.className = colorClass;
+            msg.innerHTML = `<b>[${sender}]:</b> ${text}`;
+            chatFeed.appendChild(msg);
+            chatFeed.scrollTop = chatFeed.scrollHeight;
         }
-        
-        markerGeometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
-        const markerMaterial = new THREE.PointsMaterial({
-            color: 0x22d3ee,
-            size: 0.025,
-            transparent: true,
-            opacity: 0.9
-        });
-        const markers = new THREE.Points(markerGeometry, markerMaterial);
-        scene.add(markers);
 
-        // Handle Interactive Mouse/Touch Drag Control Mechanics
-        let isDragging = false;
-        let previousMousePosition = { x: 0, y: 0 };
+        terminalForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const text = userInput.value.trim();
+            if (!text) return;
 
-        window.addEventListener('mousedown', (e) => { isDragging = true; });
-        window.addEventListener('touchstart', (e) => { isDragging = true; previousMousePosition = { x: e.touches[0].clientX, y: e.touches[0].clientY }; });
+            // Print user query instantly to feed
+            printMessage("User", text, "text-cyan-400");
+            userInput.value = '';
 
-        window.addEventListener('mousemove', (e) => {
-            const deltaMove = { x: e.clientX - previousMousePosition.x, y: e.clientY - previousMousePosition.y };
-            if (isDragging) {
-                earthMesh.rotation.y += deltaMove.x * 0.005;
-                earthMesh.rotation.x += deltaMove.y * 0.005;
-                dotMesh.rotation.y += deltaMove.x * 0.005;
-                dotMesh.rotation.x += deltaMove.y * 0.005;
-                markers.rotation.y += deltaMove.x * 0.005;
-                markers.rotation.x += deltaMove.y * 0.005;
-            }
-            previousMousePosition = { x: e.clientX, y: e.clientY };
-        });
+            const lowerText = text.toLowerCase();
 
-        window.addEventListener('touchmove', (e) => {
-            const deltaMove = { x: e.touches[0].clientX - previousMousePosition.x, y: e.touches[0].clientY - previousMousePosition.y };
-            if (isDragging) {
-                earthMesh.rotation.y += deltaMove.x * 0.008;
-                earthMesh.rotation.x += deltaMove.y * 0.008;
-                dotMesh.rotation.y += deltaMove.x * 0.008;
-                dotMesh.rotation.x += deltaMove.y * 0.008;
-                markers.rotation.y += deltaMove.x * 0.008;
-                markers.rotation.x += deltaMove.y * 0.008;
-            }
-            previousMousePosition = { x: e.touches[0].clientX, y: e.touches[0].clientY };
-        });
-
-        window.addEventListener('mouseup', () => { isDragging = false; });
-        window.addEventListener('touchend', () => { isDragging = false; });
-
-        // Handle resizing layout changes
-        window.addEventListener('resize', () => {
-            camera.aspect = window.innerWidth / window.innerHeight;
-            camera.updateProjectionMatrix();
-            renderer.setSize(window.innerWidth, window.innerHeight);
-        });
-
-        // Animation Loop
-        function animate() {
-            requestAnimationFrame(animate);
-
-            if(!isDragging) {
-                earthMesh.rotation.y += 0.001;
-                dotMesh.rotation.y += 0.0012;
-                markers.rotation.y += 0.001;
+            // Check if user is attempting an administrative code change without authorization token
+            if (lowerText.includes("code") || lowerText.includes("add line") || lowerText.includes("modify file") || lowerText.includes("spamshield")) {
+                setTimeout(() => {
+                    printMessage("Aegis Guardrail", "⛔ SECURITY VIOLATION: Core configuration changes require an administrative 'authToken' verification signature. Action rejected.", "text-rose-400 font-bold");
+                }, 500);
+                return;
             }
 
-            renderer.render(scene, camera);
-        }
-        animate();
+            // --- INTENT ROUTING MECHANICS FOR GLOBAL NAVIGATION ---
+            setTimeout(() => {
+                if (lowerText.includes("canyon")) {
+                    printMessage("Aegis Navigator", "Adjusting trajectory vectors... Flying to Grand Canyon, Arizona.", "text-emerald-400");
+                    viewer.camera.flyTo({
+                        destination: Cesium.Cartesian3.fromDegrees(-112.1129, 36.1069, 25000.0),
+                        orientation: { heading: Cesium.Math.toRadians(0.0), pitch: Cesium.Math.toRadians(-45.0) }
+                    });
+                } 
+                else if (lowerText.includes("space") || lowerText.includes("zoom out") || lowerText.includes("global view")) {
+                    printMessage("Aegis Navigator", "Scaling out camera lens to orbit trajectory altitude.", "text-emerald-400");
+                    viewer.camera.flyTo({
+                        destination: Cesium.Cartesian3.fromDegrees(-95.7129, 37.0902, 12000000.0)
+                    });
+                }
+                else if (lowerText.includes("winslow") || lowerText.includes("arizona")) {
+                    printMessage("Aegis Navigator", "Setting destination parameters to Winslow, Arizona. Dropping anchor.", "text-emerald-400");
+                    viewer.camera.flyTo({
+                        destination: Cesium.Cartesian3.fromDegrees(-110.6972, 35.0242, 8000.0),
+                        orientation: { heading: Cesium.Math.toRadians(0.0), pitch: Cesium.Math.toRadians(-90.0) }
+                    });
+                }
+                else if (lowerText.includes("sonora") || lowerText.includes("california")) {
+                    printMessage("Aegis Navigator", "Navigating coordinates to Sonora, California node.", "text-emerald-400");
+                    viewer.camera.flyTo({
+                        destination: Cesium.Cartesian3.fromDegrees(-120.3821, 37.9829, 6000.0)
+                    });
+                }
+                else {
+                    printMessage("Aegis Navigator", "Command acknowledged. Navigating layout preferences... (Try typing 'Fly to Winslow' or 'Show space view')", "text-slate-400");
+                }
+            }, 600);
+        });
     </script>
 </body>
 </html>
