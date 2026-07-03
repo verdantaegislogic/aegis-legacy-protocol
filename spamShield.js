@@ -51,3 +51,4 @@ class AegisSpamShield {
 // const shield = new AegisSpamShield();
 // shield.addSpamNumber("+12093324588"); 
 // console.log(shield.isSpam("209-332-4588")); // Returns: true
+module.exports = AegisSpamShield;
