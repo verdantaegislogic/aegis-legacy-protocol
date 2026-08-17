@@ -1,0 +1,43 @@
+# Decision Record: D-002 - Truth Engine System Architecture Enhancements
+
+## Metadata
+- **Document ID:** D-002
+- **Title:** Aegis Legacy Truth Engine Architectural Enhancements
+- **Status:** Proposed
+- **Date:** 2026-08-16
+- **Target Platform:** Aegis Legacy Protocol (Truth Engine)
+
+---
+
+## Executive Summary
+This document outlines the system architecture upgrades for the **Truth Engine** component within the **Aegis Legacy Protocol**. These enhancements optimize mobile-first telemetry capture, introduce privacy-preserving verification using Zero-Knowledge Proofs (ZKPs), enable resilient offline edge recording, and provide modular data visualization layers for the 3D globe telemetry interface.
+
+---
+
+## Technical Enhancements
+
+### 1. Mobile-First Optimization & Edge Attestation
+* **Secure Enclave Cryptographic Signing:** Move raw capture hashing and cryptographic signatures directly to the mobile device's native Secure Enclave / KeyStore prior to remote transmission.
+* **Level-of-Detail (LOD) WebGL Pipeline:** Implement dynamic LOD rendering for Three.js/WebGL globe components to maintain target frame rates on mobile hardware without memory leaks.
+
+### 2. Multi-Modal Verification & Privacy Layer
+* **Zero-Knowledge Proofs (ZKPs):** Integrate ZK-location proofs, allowing field contributors to prove physical presence within a defined geo-fence at a verified timestamp without disclosing precise raw GPS coordinates.
+* **Edge Synthetic & Deepfake Detection:** Run lightweight local AI models at the capture boundary to detect generative manipulation, frame edits, or audio anomalies before registering the payload.
+
+### 3. Decentralized Resilience & Offline Sync
+* **Offline Caching & Mesh Relays:** Use IPFS / Libp2p for local content-addressed storage, allowing devices without cellular connection to store signed evidence and relay payloads peer-to-peer upon reconnecting.
+* **Proximity Consensus Weighting:** Dynamically score claim confidence based on spatial-temporal clustering of multiple independent, hardware-attested capture points.
+
+### 4. Modular Visualizations & API Ecosystem
+* **Multi-Layer Globe Overlays:** Add toggleable layers for thermal imagery, historical satellite basemaps, spatial orientation vectors, and event timelines.
+* **JSON-LD Verification Badges:** Expose lightweight REST and GraphQL endpoints along with embeddable JSON-LD metadata schema for third-party newsrooms and verification platforms.
+
+---
+
+## Implementation Checklist
+
+- [ ] Implement mobile enclave signing routines in client capture pipeline.
+- [ ] Configure Three.js WebGL level-of-detail (LOD) dynamic scaling.
+- [ ] Benchmark ZK-proof generation times on mobile processor architectures.
+- [ ] Integrate local IPFS caching layer for offline capture queue.
+- [ ] Design JSON-LD verification schema for public API consumers.
