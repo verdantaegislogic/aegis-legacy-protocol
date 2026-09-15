@@ -7,7 +7,7 @@
     "dev": "next dev",
     "start": "next start",
     "build": "next build",
-    "lint": "next lint"
+    "lint": "eslint ."
   },
   "engines": {
     "node": ">=18.0.0"
