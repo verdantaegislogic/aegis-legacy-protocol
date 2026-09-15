@@ -9,6 +9,7 @@ type SignalLocation = {
   latitude: number
   longitude: number
   status: string
+  telemetryStatus?: "Verified Signals" | "Needs Verification" | "Active Ingestion"
   latency: string
   confidence: string
   lastSeen: string
@@ -42,7 +43,7 @@ export function StreetViewModal({ location, onClose }: StreetViewModalProps) {
         </div>
 
         <div className="street-view-telemetry">
-          <div><span>Signal status</span><strong><i />{location.status}</strong></div>
+          <div><span>Signal status</span><strong className={`status-badge status-${(location.telemetryStatus ?? location.status).toLowerCase().replace(/\s+/g, "-")}`}><i />{location.telemetryStatus ?? location.status}</strong></div>
           <div><span>Avg latency</span><strong>{location.latency}</strong></div>
           <div><span>Confidence</span><strong>{location.confidence}</strong></div>
           <div><span>Last verified</span><strong>{location.lastSeen}</strong></div>

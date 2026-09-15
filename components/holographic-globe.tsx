@@ -6,16 +6,29 @@ import { useMemo, useRef } from "react"
 import type { SignalLocation } from "@/components/street-view-modal"
 import * as THREE from "three"
 
-const activeLocations: SignalLocation[] = [
-  { id: "WEST-02", name: "Sierra relay", region: "California, USA", latitude: 38.58, longitude: -121.49, status: "Verified", latency: "142ms", confidence: "0.98", lastSeen: "09:42:18 UTC" },
-  { id: "EUROPE-07", name: "North Sea relay", region: "Amsterdam, Netherlands", latitude: 52.37, longitude: 4.90, status: "Verified", latency: "167ms", confidence: "0.96", lastSeen: "09:41:02 UTC" },
-  { id: "APAC-04", name: "Pacific relay", region: "Tokyo, Japan", latitude: 35.68, longitude: 139.69, status: "Verified", latency: "184ms", confidence: "0.97", lastSeen: "09:39:44 UTC" },
+type TelemetryStatus = "Verified Signals" | "Needs Verification" | "Active Ingestion"
+
+type TelemetryNode = SignalLocation & { telemetryStatus: TelemetryStatus }
+
+const activeLocations: TelemetryNode[] = [
+  { id: "WEST-02", name: "Sierra relay", region: "California, USA", latitude: 38.58, longitude: -121.49, status: "Verified", telemetryStatus: "Verified Signals", latency: "142ms", confidence: "0.98", lastSeen: "09:42:18 UTC" },
+  { id: "EUROPE-07", name: "North Sea relay", region: "Amsterdam, Netherlands", latitude: 52.37, longitude: 4.90, status: "Verified", telemetryStatus: "Verified Signals", latency: "167ms", confidence: "0.96", lastSeen: "09:41:02 UTC" },
+  { id: "APAC-04", name: "Pacific relay", region: "Tokyo, Japan", latitude: 35.68, longitude: 139.69, status: "Verified", telemetryStatus: "Verified Signals", latency: "184ms", confidence: "0.97", lastSeen: "09:39:44 UTC" },
+  { id: "NORTH-11", name: "Arctic relay", region: "Reykjavik, Iceland", latitude: 64.15, longitude: -21.94, status: "Needs verification", telemetryStatus: "Needs Verification", latency: "231ms", confidence: "0.71", lastSeen: "09:37:20 UTC" },
+  { id: "EAST-05", name: "Harbor relay", region: "Busan, South Korea", latitude: 35.18, longitude: 129.08, status: "Ingesting", telemetryStatus: "Active Ingestion", latency: "119ms", confidence: "0.89", lastSeen: "09:36:08 UTC" },
+  { id: "SOUTH-03", name: "Cape relay", region: "Cape Town, South Africa", latitude: -33.92, longitude: 18.42, status: "Ingesting", telemetryStatus: "Active Ingestion", latency: "198ms", confidence: "0.91", lastSeen: "09:34:52 UTC" },
 ]
 
 function toGlobePosition(latitude: number, longitude: number) {
   const phi = (90 - latitude) * (Math.PI / 180)
   const theta = (longitude + 180) * (Math.PI / 180)
   return new THREE.Vector3(2.05 * Math.sin(phi) * Math.cos(theta), 2.05 * Math.cos(phi), 2.05 * Math.sin(phi) * Math.sin(theta))
+}
+
+const statusColors: Record<TelemetryStatus, string> = {
+  "Verified Signals": "#39ff88",
+  "Needs Verification": "#ff4567",
+  "Active Ingestion": "#ffe04a",
 }
 
 function SignalNodes({ onSelect }: { onSelect: (location: SignalLocation) => void }) {
@@ -28,7 +41,7 @@ function SignalNodes({ onSelect }: { onSelect: (location: SignalLocation) => voi
   const geometry = useMemo(() => new THREE.BufferGeometry().setFromPoints(points), [points])
   return <>
     <points geometry={geometry}><pointsMaterial color="#00F0FF" size={0.045} sizeAttenuation transparent opacity={0.95} blending={THREE.AdditiveBlending} /></points>
-    {activeLocations.map((location) => <mesh key={location.id} position={toGlobePosition(location.latitude, location.longitude)} onClick={(event) => { event.stopPropagation(); onSelect(location) }} onPointerOver={() => { document.body.style.cursor = "pointer" }} onPointerOut={() => { document.body.style.cursor = "default" }}><sphereGeometry args={[0.105, 16, 16]} /><meshBasicMaterial color="#ffffff" /></mesh>)}
+    {activeLocations.map((location) => <mesh key={location.id} position={toGlobePosition(location.latitude, location.longitude)} onClick={(event) => { event.stopPropagation(); onSelect(location) }} onPointerOver={() => { document.body.style.cursor = "pointer" }} onPointerOut={() => { document.body.style.cursor = "default" }}><sphereGeometry args={[0.12, 16, 16]} /><meshBasicMaterial color={statusColors[location.telemetryStatus]} toneMapped={false} /></mesh>)}
   </>
 }
 
