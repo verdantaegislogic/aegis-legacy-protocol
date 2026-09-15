@@ -1,6 +1,10 @@
+"use client"
+
+import { useState } from "react"
 import { Activity, ArrowUpRight, Bell, ChevronRight, CircleCheck, Radio, ShieldCheck, Wifi } from "lucide-react"
 import { SignalEntryModal } from "@/components/signal-entry-modal"
 import { HolographicGlobe } from "@/components/holographic-globe"
+import { StreetViewModal, type SignalLocation } from "@/components/street-view-modal"
 
 const signals = [
   { label: "Calls screened", value: "12,840", delta: "+8.4%", tone: "positive" },
@@ -15,6 +19,8 @@ const events = [
 ]
 
 export default function Dashboard() {
+  const [selectedLocation, setSelectedLocation] = useState<SignalLocation | null>(null)
+
   return (
     <main className="min-h-screen bg-background text-foreground">
       <div className="mx-auto flex min-h-screen max-w-7xl flex-col px-4 py-5 sm:px-6 lg:px-8">
@@ -73,7 +79,7 @@ export default function Dashboard() {
                 <span className="font-mono text-[10px] text-muted-foreground">REF: ALP-2048</span>
               </div>
               <div className="relative min-h-80 overflow-hidden bg-[#030712] sm:min-h-[25rem]">
-                <HolographicGlobe />
+                <HolographicGlobe onSelect={setSelectedLocation} />
               </div>
               <div className="flex flex-wrap items-center gap-x-6 gap-y-3 border-t border-border px-5 py-4 font-mono text-[10px] uppercase tracking-wider text-muted-foreground sm:px-6"><span className="flex items-center gap-2"><Wifi className="size-3 text-primary" aria-hidden="true" /> 42 nodes online</span><span className="flex items-center gap-2"><Radio className="size-3 text-primary" aria-hidden="true" /> 184ms avg latency</span></div>
             </section>
@@ -89,6 +95,7 @@ export default function Dashboard() {
 
         <footer className="flex flex-col gap-2 border-t border-border py-5 font-mono text-[10px] uppercase tracking-wider text-muted-foreground sm:flex-row sm:items-center sm:justify-between"><span>Aegis Legacy Protocol · Core 1.0</span><span>Encrypted channel · node 07</span></footer>
       </div>
+      <StreetViewModal location={selectedLocation} onClose={() => setSelectedLocation(null)} />
     </main>
   )
 }
