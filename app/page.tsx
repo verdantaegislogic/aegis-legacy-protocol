@@ -1,5 +1,10 @@
+"use client"
+
+import { useState } from "react"
 import { Activity, ArrowUpRight, Bell, ChevronRight, CircleCheck, Radio, ShieldCheck, Wifi } from "lucide-react"
 import { SignalEntryModal } from "@/components/signal-entry-modal"
+import { HolographicGlobe } from "@/components/holographic-globe"
+import { StreetViewModal, type SignalLocation } from "@/components/street-view-modal"
 
 const signals = [
   { label: "Calls screened", value: "12,840", delta: "+8.4%", tone: "positive" },
@@ -14,6 +19,8 @@ const events = [
 ]
 
 export default function Dashboard() {
+  const [selectedLocation, setSelectedLocation] = useState<SignalLocation | null>(null)
+
   return (
     <main className="min-h-screen bg-background text-foreground">
       <div className="mx-auto flex min-h-screen max-w-7xl flex-col px-4 py-5 sm:px-6 lg:px-8">
@@ -71,12 +78,8 @@ export default function Dashboard() {
                 </div>
                 <span className="font-mono text-[10px] text-muted-foreground">REF: ALP-2048</span>
               </div>
-              <div className="relative min-h-64 overflow-hidden bg-[linear-gradient(rgba(95,221,180,0.06)_1px,transparent_1px),linear-gradient(90deg,rgba(95,221,180,0.06)_1px,transparent_1px)] bg-[size:32px_32px] p-5 sm:p-8">
-                <div className="absolute inset-x-0 top-1/2 h-px bg-gradient-to-r from-transparent via-primary/70 to-transparent" />
-                <div className="absolute inset-x-1/4 top-[42%] h-16 rounded-[50%] border-t border-primary/80 shadow-[0_-8px_24px_color-mix(in_oklab,var(--primary)_20%,transparent)]" />
-                <div className="absolute left-1/4 top-[36%] size-2 rounded-full bg-primary shadow-[0_0_14px_var(--primary)]" />
-                <div className="absolute right-1/4 top-[47%] size-2 rounded-full bg-primary shadow-[0_0_14px_var(--primary)]" />
-                <div className="absolute bottom-5 left-5 right-5 flex justify-between font-mono text-[10px] uppercase tracking-wider text-muted-foreground sm:bottom-8 sm:left-8 sm:right-8"><span>edge-west-02</span><span>signal stable</span></div>
+              <div className="relative min-h-80 overflow-hidden bg-[#030712] sm:min-h-[25rem]">
+                <HolographicGlobe onSelect={setSelectedLocation} />
               </div>
               <div className="flex flex-wrap items-center gap-x-6 gap-y-3 border-t border-border px-5 py-4 font-mono text-[10px] uppercase tracking-wider text-muted-foreground sm:px-6"><span className="flex items-center gap-2"><Wifi className="size-3 text-primary" aria-hidden="true" /> 42 nodes online</span><span className="flex items-center gap-2"><Radio className="size-3 text-primary" aria-hidden="true" /> 184ms avg latency</span></div>
             </section>
@@ -92,6 +95,7 @@ export default function Dashboard() {
 
         <footer className="flex flex-col gap-2 border-t border-border py-5 font-mono text-[10px] uppercase tracking-wider text-muted-foreground sm:flex-row sm:items-center sm:justify-between"><span>Aegis Legacy Protocol · Core 1.0</span><span>Encrypted channel · node 07</span></footer>
       </div>
+      <StreetViewModal location={selectedLocation} onClose={() => setSelectedLocation(null)} />
     </main>
   )
 }

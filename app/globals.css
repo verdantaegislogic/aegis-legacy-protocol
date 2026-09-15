@@ -1,20 +1,54 @@
 @import "tailwindcss";
 
 :root {
-  --background: #0b1015;
-  --foreground: #e8f0ed;
-  --card: #11191f;
-  --card-foreground: #e8f0ed;
-  --muted: #172229;
-  --muted-foreground: #82948f;
-  --border: #24333a;
-  --primary: #62d9ae;
-  --primary-foreground: #06120e;
+  --background: #030712;
+  --foreground: #e8f7ff;
+  --card: #071226;
+  --card-foreground: #e8f7ff;
+  --muted: #0b1a35;
+  --muted-foreground: #7693ad;
+  --border: #16365c;
+  --primary: #00f0ff;
+  --primary-foreground: #00151d;
 }
 
 * { box-sizing: border-box; }
 html { background: var(--background); }
-body { margin: 0; background: var(--background); color: var(--foreground); font-family: Arial, Helvetica, sans-serif; }
+body { margin: 0; background: radial-gradient(circle at 72% 20%, #0b1d42 0%, #030712 52%, #02050d 100%); color: var(--foreground); font-family: Arial, Helvetica, sans-serif; }
+
+.holographic-globe { position: relative; height: 100%; min-height: 20rem; width: 100%; overflow: hidden; background: radial-gradient(circle at center, rgba(0, 240, 255, 0.12), transparent 48%); }
+.holographic-globe canvas { display: block; height: 100% !important; width: 100% !important; }
+.globe-scanline { pointer-events: none; position: absolute; inset: 0; background: linear-gradient(180deg, transparent 0%, rgba(0, 240, 255, 0.08) 50%, transparent 100%); mix-blend-mode: screen; }
+.globe-label { position: absolute; bottom: 1.25rem; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 0.625rem; letter-spacing: 0.16em; color: #6d9ab8; }
+.globe-label-west { left: 1.25rem; }
+.globe-label-east { right: 1.25rem; color: #00f0ff; }
+
+@media (prefers-reduced-motion: reduce) {
+  .holographic-globe canvas { opacity: 0.85; }
+}
+button { font: inherit; }
+.street-view-backdrop { position: fixed; inset: 0; z-index: 50; display: grid; place-items: center; padding: 1rem; background: rgba(1, 5, 16, 0.82); backdrop-filter: blur(12px); }
+.street-view-card { width: min(100%, 42rem); overflow: hidden; border: 1px solid rgba(0, 240, 255, 0.42); border-radius: 1rem; background: #071226; box-shadow: 0 0 60px rgba(0, 240, 255, 0.18); }
+.street-view-header { display: flex; justify-content: space-between; gap: 1rem; padding: 1rem 1rem 0.85rem; }
+.street-view-kicker, .street-view-footer span { display: flex; align-items: center; gap: 0.4rem; color: #00f0ff; font: 10px ui-monospace, SFMono-Regular, Menlo, monospace; letter-spacing: 0.14em; text-transform: uppercase; }
+.street-view-kicker svg, .street-view-footer svg { width: 0.8rem; height: 0.8rem; }
+.street-view-header h2 { margin: 0.4rem 0 0.2rem; font-size: 1.2rem; font-weight: 500; }
+.street-view-header p { margin: 0; color: #7693ad; font: 11px ui-monospace, SFMono-Regular, Menlo, monospace; }
+.street-view-close { display: grid; flex: 0 0 auto; place-items: center; width: 2rem; height: 2rem; border: 1px solid #16365c; border-radius: 999px; background: transparent; color: #7693ad; cursor: pointer; }
+.street-view-close:hover { color: #e8f7ff; border-color: #00f0ff; }
+.street-view-close svg { width: 1rem; height: 1rem; }
+.street-view-frame { aspect-ratio: 16 / 9; background: #030712; }
+.street-view-frame iframe { width: 100%; height: 100%; border: 0; }
+.street-view-fallback { display: grid; height: 100%; place-items: center; padding: 2rem; color: #7693ad; text-align: center; font: 12px ui-monospace, SFMono-Regular, Menlo, monospace; }
+.street-view-telemetry { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.75rem; padding: 1rem; border-top: 1px solid #16365c; }
+.street-view-telemetry div { display: flex; flex-direction: column; gap: 0.25rem; }
+.street-view-telemetry span { color: #7693ad; font: 9px ui-monospace, SFMono-Regular, Menlo, monospace; text-transform: uppercase; letter-spacing: 0.12em; }
+.street-view-telemetry strong { display: flex; align-items: center; gap: 0.35rem; color: #e8f7ff; font: 12px ui-monospace, SFMono-Regular, Menlo, monospace; }
+.street-view-telemetry i { width: 5px; height: 5px; border-radius: 50%; background: #00f0ff; box-shadow: 0 0 8px #00f0ff; }
+.street-view-footer { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 0.5rem; padding: 0.75rem 1rem; background: #030712; }
+.street-view-footer span { color: #7693ad; font-size: 9px; letter-spacing: 0.08em; }
+@media (max-width: 480px) { .street-view-backdrop { align-items: end; padding: 0.5rem; } .street-view-card { border-radius: 1rem 1rem 0.5rem 0.5rem; } .street-view-frame { aspect-ratio: 4 / 3; } }
+
 button { font: inherit; }
 ::selection { background: color-mix(in oklab, var(--primary) 28%, transparent); color: var(--foreground); }
 
