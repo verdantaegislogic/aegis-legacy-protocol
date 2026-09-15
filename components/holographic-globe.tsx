@@ -32,9 +32,45 @@ function SignalNodes({ onSelect }: { onSelect: (location: SignalLocation) => voi
   </>
 }
 
+const earthVertexShader = `
+  varying vec2 vUv;
+  varying vec3 vNormal;
+
+  void main() {
+    vUv = uv;
+    vNormal = normalize(normalMatrix * normal);
+    gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+  }
+`
+
+const earthFragmentShader = `
+  uniform sampler2D uEarthTexture;
+  varying vec2 vUv;
+  varying vec3 vNormal;
+
+  void main() {
+    vec3 source = texture2D(uEarthTexture, vUv).rgb;
+    float blueChannel = source.b;
+    float landSignal = max(source.r, source.g) - blueChannel * 0.72;
+    float landMask = smoothstep(0.015, 0.12, landSignal);
+    float coastGlow = smoothstep(0.0, 0.16, landSignal) - landMask;
+    float lightFacing = 0.72 + 0.28 * max(dot(normalize(vNormal), vec3(0.2, 0.45, 1.0)), 0.0);
+    vec3 ocean = vec3(0.005, 0.035, 0.09) + source * 0.035;
+    vec3 cyanLand = vec3(0.0, 0.94, 1.0) * (0.72 + source.g * 0.45) * lightFacing;
+    vec3 coast = vec3(0.0, 0.38, 0.58) * coastGlow;
+    vec3 color = mix(ocean, cyanLand, landMask) + coast;
+    gl_FragColor = vec4(color, 1.0);
+  }
+`
+
 function GlobeScene({ onSelect }: { onSelect: (location: SignalLocation) => void }) {
   const globe = useRef<THREE.Group>(null)
   const earthTexture = useTexture("/assets/3d/texture_earth.png")
+  const earthMaterial = useMemo(() => new THREE.ShaderMaterial({
+    uniforms: { uEarthTexture: { value: earthTexture } },
+    vertexShader: earthVertexShader,
+    fragmentShader: earthFragmentShader,
+  }), [earthTexture])
 
   useFrame((_, delta) => {
     if (globe.current) globe.current.rotation.y += delta * 0.08
@@ -48,16 +84,8 @@ function GlobeScene({ onSelect }: { onSelect: (location: SignalLocation) => void
       <Stars radius={20} depth={8} count={850} factor={1.5} saturation={0} fade speed={0.2} />
       <group ref={globe}>
         <mesh>
-          <sphereGeometry args={[2, 64, 64]} />
-          <meshPhongMaterial
-            map={earthTexture}
-            color="#8deeff"
-            emissive="#06253c"
-            emissiveIntensity={0.65}
-            shininess={18}
-            transparent
-            opacity={0.98}
-          />
+          <sphereGeometry args={[2, 128, 96]} />
+          <primitive object={earthMaterial} attach="material" />
         </mesh>
         <mesh>
           <sphereGeometry args={[2.012, 32, 20]} />
