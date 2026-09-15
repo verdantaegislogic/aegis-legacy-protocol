@@ -1,7 +1,7 @@
 "use client"
 
 import { Canvas, useFrame } from "@react-three/fiber"
-import { OrbitControls, PerspectiveCamera, Stars } from "@react-three/drei"
+import { OrbitControls, PerspectiveCamera, Stars, useTexture } from "@react-three/drei"
 import { useMemo, useRef } from "react"
 import type { SignalLocation } from "@/components/street-view-modal"
 import * as THREE from "three"
@@ -34,6 +34,7 @@ function SignalNodes({ onSelect }: { onSelect: (location: SignalLocation) => voi
 
 function GlobeScene({ onSelect }: { onSelect: (location: SignalLocation) => void }) {
   const globe = useRef<THREE.Group>(null)
+  const earthTexture = useTexture("/assets/3d/texture_earth.png")
 
   useFrame((_, delta) => {
     if (globe.current) globe.current.rotation.y += delta * 0.08
@@ -48,7 +49,15 @@ function GlobeScene({ onSelect }: { onSelect: (location: SignalLocation) => void
       <group ref={globe}>
         <mesh>
           <sphereGeometry args={[2, 64, 64]} />
-          <meshBasicMaterial color="#06152d" transparent opacity={0.96} />
+          <meshPhongMaterial
+            map={earthTexture}
+            color="#8deeff"
+            emissive="#06253c"
+            emissiveIntensity={0.65}
+            shininess={18}
+            transparent
+            opacity={0.98}
+          />
         </mesh>
         <mesh>
           <sphereGeometry args={[2.012, 32, 20]} />
@@ -60,7 +69,18 @@ function GlobeScene({ onSelect }: { onSelect: (location: SignalLocation) => void
           <meshBasicMaterial color="#1ccfff" side={THREE.BackSide} transparent opacity={0.18} blending={THREE.AdditiveBlending} />
         </mesh>
       </group>
-      <OrbitControls enablePan={false} enableZoom={false} autoRotate={false} minPolarAngle={Math.PI / 2.7} maxPolarAngle={Math.PI / 1.7} />
+      <OrbitControls
+        enablePan={false}
+        enableZoom
+        zoomSpeed={0.7}
+        rotateSpeed={0.55}
+        minDistance={4.2}
+        maxDistance={8.5}
+        autoRotate={false}
+        minPolarAngle={Math.PI / 2.7}
+        maxPolarAngle={Math.PI / 1.7}
+        touches={{ ONE: THREE.TOUCH.ROTATE, TWO: THREE.TOUCH.DOLLY_PAN }}
+      />
     </>
   )
 }
