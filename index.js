@@ -25,7 +25,14 @@ module.exports = async (req, res) => {
     let body = '';
     req.on('data', chunk => { body += chunk; });
     await new Promise(resolve => req.on('end', resolve));
-    const payload = body ? JSON.parse(body) : {};
+    let payload = {};
+    if (body) {
+      try {
+        payload = JSON.parse(body);
+      } catch {
+        return res.writeHead(400).end(JSON.stringify({ error: "Request body must be valid JSON." }));
+      }
+    }
 
     // ─── ROUTE: INCOMING COMMUNICATION SCREENING ───
     if (url === '/api/screen-call' && method === 'POST') {

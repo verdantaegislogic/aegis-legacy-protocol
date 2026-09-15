@@ -4,7 +4,8 @@
   "description": "Core architecture for Aegis Legacy Protocol communication routing and analysis",
   "main": "index.js",
   "scripts": {
-    "start": "node index.js"
+    "start": "node index.js",
+    "build": "node --check index.js && node --check ai-integration.js && node --check spamShield.js && node --check proof-of-reality.js"
   },
   "engines": {
     "node": ">=18.0.0"
