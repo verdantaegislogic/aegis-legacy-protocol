@@ -45,6 +45,10 @@ button { font: inherit; }
 .street-view-telemetry span { color: #7693ad; font: 9px ui-monospace, SFMono-Regular, Menlo, monospace; text-transform: uppercase; letter-spacing: 0.12em; }
 .street-view-telemetry strong { display: flex; align-items: center; gap: 0.35rem; color: #e8f7ff; font: 12px ui-monospace, SFMono-Regular, Menlo, monospace; }
 .street-view-telemetry i { width: 5px; height: 5px; border-radius: 50%; background: #00f0ff; box-shadow: 0 0 8px #00f0ff; }
+.street-view-telemetry .status-badge { width: fit-content; border: 1px solid currentColor; border-radius: 999px; padding: 0.3rem 0.5rem; font-size: 10px; }
+.street-view-telemetry .status-verified-signals { color: #39ff88; }
+.street-view-telemetry .status-needs-verification { color: #ff4567; }
+.street-view-telemetry .status-active-ingestion { color: #ffe04a; }
 .street-view-footer { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 0.5rem; padding: 0.75rem 1rem; background: #030712; }
 .street-view-footer span { color: #7693ad; font-size: 9px; letter-spacing: 0.08em; }
 @media (max-width: 480px) { .street-view-backdrop { align-items: end; padding: 0.5rem; } .street-view-card { border-radius: 1rem 1rem 0.5rem 0.5rem; } .street-view-frame { aspect-ratio: 4 / 3; } }
