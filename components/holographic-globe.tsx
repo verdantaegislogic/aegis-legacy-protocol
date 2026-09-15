@@ -1,8 +1,8 @@
 "use client"
 
 import { Html, OrbitControls, PerspectiveCamera, Sparkles, useTexture } from "@react-three/drei"
-import { Canvas, useThree } from "@react-three/fiber"
-import { useMemo, useRef } from "react"
+import { Canvas, useFrame, useThree } from "@react-three/fiber"
+import { useMemo, useRef, useState } from "react"
 import * as THREE from "three"
 import type { SignalLocation } from "@/components/street-view-modal"
 
@@ -47,6 +47,32 @@ function EarthSurface() {
   )
 }
 
+function CameraFocus({ targetLocation, onComplete }: { targetLocation: SignalLocation | null; onComplete: () => void }) {
+  const { camera } = useThree()
+  const animation = useRef<{ from: THREE.Vector3; to: THREE.Vector3; started: number } | null>(null)
+  const lastTarget = useRef<string | null>(null)
+
+  useFrame(() => {
+    if (targetLocation && targetLocation.id !== lastTarget.current) {
+      const target = latLngToVector(targetLocation.latitude, targetLocation.longitude, 3.35).normalize().multiplyScalar(3.35)
+      animation.current = { from: camera.position.clone(), to: target, started: performance.now() }
+      lastTarget.current = targetLocation.id
+    }
+
+    if (!animation.current) return
+    const progress = Math.min((performance.now() - animation.current.started) / 720, 1)
+    const eased = 1 - Math.pow(1 - progress, 3)
+    camera.position.lerpVectors(animation.current.from, animation.current.to, eased)
+    camera.lookAt(0, 0, 0)
+    if (progress === 1) {
+      animation.current = null
+      onComplete()
+    }
+  })
+
+  return null
+}
+
 function GlobeScene({ onSelect }: { onSelect: (location: SignalLocation) => void }) {
   const group = useRef<THREE.Group>(null)
   const { gl } = useThree()
@@ -85,13 +111,16 @@ function GlobeScene({ onSelect }: { onSelect: (location: SignalLocation) => void
 }
 
 export function HolographicGlobe({ onSelect }: { onSelect: (location: SignalLocation) => void }) {
+  const [focusedLocation, setFocusedLocation] = useState<SignalLocation | null>(null)
+
   return (
     <div className="holographic-globe" aria-label="Interactive Three.js globe showing global signal nodes" role="application">
       <Canvas dpr={[1, 2]} gl={{ antialias: true, alpha: true }}>
         <PerspectiveCamera makeDefault position={[0, 0, 6.4]} fov={38} />
         <color attach="background" args={["#030712"]} />
-        <GlobeScene onSelect={onSelect} />
-        <OrbitControls enablePan={false} enableDamping dampingFactor={0.08} minDistance={2.6} maxDistance={9} rotateSpeed={0.55} zoomSpeed={0.9} touches={{ ONE: THREE.TOUCH.ROTATE, TWO: THREE.TOUCH.DOLLY_PAN }} />
+        <CameraFocus targetLocation={focusedLocation} onComplete={() => { if (focusedLocation) onSelect(focusedLocation) }} />
+        <GlobeScene onSelect={setFocusedLocation} />
+        <OrbitControls enablePan={false} enableDamping dampingFactor={0.08} minDistance={2.25} maxDistance={9} rotateSpeed={0.55} zoomSpeed={1.15} touches={{ ONE: THREE.TOUCH.ROTATE, TWO: THREE.TOUCH.DOLLY_PAN }} />
       </Canvas>
       <div className="globe-scanline" aria-hidden="true" />
       <div className="globe-label globe-label-west">NODE / WEST-02</div>
