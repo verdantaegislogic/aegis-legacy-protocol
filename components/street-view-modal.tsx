@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { Check, ChevronLeft, ChevronRight, MapPin, Radio, ShieldCheck, X } from "lucide-react"
+import { Check, Crosshair, MapPin, Radio, ShieldCheck, X } from "lucide-react"
 
 type SignalLocation = {
   id: string
@@ -22,45 +22,44 @@ type StreetViewModalProps = {
 }
 
 export function StreetViewModal({ location, onClose }: StreetViewModalProps) {
+  const [verified, setVerified] = useState(false)
+
   if (!location) return null
 
-  const [heading, setHeading] = useState(0)
-  const [verified, setVerified] = useState(false)
-  const apiKey = process.env.NEXT_PUBLIC_MAPS_API_KEY
-  const streetViewUrl = `https://www.google.com/maps/embed/v1/streetview?key=${apiKey ?? ""}&location=${location.latitude},${location.longitude}&heading=${heading}&pitch=4&fov=80`
+  const telemetryStatus = location.telemetryStatus ?? location.status
+  const statusClass = telemetryStatus.toLowerCase().replace(/\s+/g, "-")
 
   return (
     <div className="street-view-backdrop" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) onClose() }}>
       <section className="street-view-card" role="dialog" aria-modal="true" aria-labelledby="street-view-title">
         <div className="street-view-header">
           <div>
-            <div className="street-view-kicker"><MapPin aria-hidden="true" /> Active node / ground view</div>
+            <div className="street-view-kicker"><MapPin aria-hidden="true" /> Neighborhood telemetry</div>
             <h2 id="street-view-title">{location.name}</h2>
             <p>{location.region} · {location.latitude.toFixed(3)}, {location.longitude.toFixed(3)}</p>
           </div>
-          <button className="street-view-close" onClick={onClose} aria-label="Close Street View"><X aria-hidden="true" /></button>
+          <button className="street-view-close" onClick={onClose} aria-label="Close neighborhood telemetry"><X aria-hidden="true" /></button>
         </div>
 
-        <div className="street-view-frame">
-          {apiKey ? <iframe title={`Street View imagery for ${location.name}`} src={streetViewUrl} loading="lazy" referrerPolicy="no-referrer-when-downgrade" allowFullScreen /> : <div className="street-view-fallback">Street View imagery requires a configured Maps API key.</div>}
-          <div className="street-view-orientation" aria-label="Street view orientation controls">
-            <button onClick={() => setHeading((value) => (value + 315) % 360)} aria-label="Rotate view left"><ChevronLeft aria-hidden="true" /></button>
-            <span>{heading.toString().padStart(3, "0")}°</span>
-            <button onClick={() => setHeading((value) => (value + 45) % 360)} aria-label="Rotate view right"><ChevronRight aria-hidden="true" /></button>
-          </div>
+        <div className="street-view-frame telemetry-map" role="img" aria-label={`Static neighborhood map centered on ${location.name}`}>
+          <img src="/assets/telemetry-neighborhood-map.png" alt="" />
+          <div className="telemetry-map-grid" aria-hidden="true" />
+          <div className="telemetry-crosshair" aria-hidden="true"><Crosshair /></div>
+          <div className="telemetry-map-readout"><span>GROUND IMAGERY / STATIC FALLBACK</span><strong>LOCK {location.latitude.toFixed(3)}° / {location.longitude.toFixed(3)}°</strong></div>
+          <div className="telemetry-map-scan" aria-hidden="true" />
         </div>
 
         <div className="street-view-telemetry">
-          <div><span>Signal status</span><strong className={`status-badge status-${(location.telemetryStatus ?? location.status).toLowerCase().replace(/\s+/g, "-")}`}><i />{location.telemetryStatus ?? location.status}</strong></div>
+          <div><span>Signal status</span><strong className={`status-badge status-${statusClass}`}><i />{telemetryStatus}</strong></div>
+          <div><span>Signal confidence</span><strong>{location.confidence}</strong></div>
           <div><span>Avg latency</span><strong>{location.latency}</strong></div>
-          <div><span>Confidence</span><strong>{location.confidence}</strong></div>
-          <div><span>Last verified</span><strong>{location.lastSeen}</strong></div>
+          <div><span>Coordinates</span><strong>{location.latitude.toFixed(3)}, {location.longitude.toFixed(3)}</strong></div>
         </div>
         <div className="street-view-actions">
           <button className={`street-view-verify ${verified ? "is-verified" : ""}`} onClick={() => setVerified(true)} disabled={verified}><Check aria-hidden="true" /> {verified ? "Location verified" : "Verify location"}</button>
           <button className="street-view-secondary" onClick={() => setVerified(false)} disabled={!verified}>Reset review</button>
         </div>
-        <div className="street-view-footer"><span><Radio aria-hidden="true" /> Telemetry stream live</span><span><ShieldCheck aria-hidden="true" /> Node {location.id}</span></div>
+        <div className="street-view-footer"><span><Radio aria-hidden="true" /> Telemetry stream live</span><span><ShieldCheck aria-hidden="true" /> Node {location.id} · Last {location.lastSeen}</span></div>
       </section>
     </div>
   )
