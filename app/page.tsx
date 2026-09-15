@@ -1,4 +1,5 @@
 import { Activity, ArrowUpRight, Bell, ChevronRight, CircleCheck, Radio, ShieldCheck, Wifi } from "lucide-react"
+import { SignalEntryModal } from "@/components/signal-entry-modal"
 
 const signals = [
   { label: "Calls screened", value: "12,840", delta: "+8.4%", tone: "positive" },
@@ -30,6 +31,7 @@ export default function Dashboard() {
             <span className="hidden items-center gap-2 rounded-full border border-primary/20 bg-primary/5 px-3 py-1.5 font-mono text-[10px] uppercase tracking-wider text-primary sm:flex">
               <span className="size-1.5 rounded-full bg-primary shadow-[0_0_8px_var(--primary)]" /> Systems nominal
             </span>
+            <SignalEntryModal />
             <button className="grid size-9 place-items-center rounded-full border border-border text-muted-foreground transition-colors hover:bg-muted hover:text-foreground" aria-label="Notifications">
               <Bell className="size-4" aria-hidden="true" />
             </button>
