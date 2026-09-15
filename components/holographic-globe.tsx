@@ -65,6 +65,7 @@ const earthFragmentShader = `
 
 function GlobeScene({ onSelect }: { onSelect: (location: SignalLocation) => void }) {
   const globe = useRef<THREE.Group>(null)
+  const controls = useRef<any>(null)
   const earthTexture = useTexture("/assets/3d/texture_earth.png")
   const earthMaterial = useMemo(() => new THREE.ShaderMaterial({
     uniforms: { uEarthTexture: { value: earthTexture } },
@@ -82,7 +83,14 @@ function GlobeScene({ onSelect }: { onSelect: (location: SignalLocation) => void
       <ambientLight intensity={0.4} color="#1ccfff" />
       <pointLight position={[-4, 3, 4]} intensity={12} distance={12} color="#00F0FF" />
       <Stars radius={20} depth={8} count={850} factor={1.5} saturation={0} fade speed={0.2} />
-      <group ref={globe}>
+      <group
+        ref={globe}
+        onDoubleClick={(event) => {
+          event.stopPropagation()
+          controls.current?.dollyIn(1.6)
+          controls.current?.update()
+        }}
+      >
         <mesh>
           <sphereGeometry args={[2, 128, 96]} />
           <primitive object={earthMaterial} attach="material" />
